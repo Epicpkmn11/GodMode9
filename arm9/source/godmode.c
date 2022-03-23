@@ -436,7 +436,7 @@ u32 SdFormatMenu(const char* slabel) {
     // check actual SD card size
     sdcard_size_mb = GetSDCardSize() / 0x100000;
     if (!sdcard_size_mb) {
-        ShowPrompt(false, STR_SD_NOT_DETECTED);
+        ShowPrompt(false, "%s", STR_SD_NOT_DETECTED);
         return 1;
     }
 
@@ -461,7 +461,7 @@ u32 SdFormatMenu(const char* slabel) {
         return 1;
 
     if (!FormatSDCard(emunand_size_mb, cluster_size, label)) {
-        ShowPrompt(false, STR_FORMAT_SD_FAILED);
+        ShowPrompt(false, "%s", STR_FORMAT_SD_FAILED);
         return 1;
     }
 
@@ -470,16 +470,16 @@ u32 SdFormatMenu(const char* slabel) {
         u32 n_emunands = 1;
         if (emunand_size_mb >= 2 * sysnand_size_mb) {
             const char* option_emunand_type[4] = { STR_REDNAND_TYPE_MULTI, STR_REDNAND_TYPE_SINGLE, STR_GW_EMUNAND_TYPE, STR_DONT_SET_UP };
-            user_select = ShowSelectPrompt(4, option_emunand_type, STR_CHOOSE_EMUNAND_TYPE);
+            user_select = ShowSelectPrompt(4, option_emunand_type, "%s", STR_CHOOSE_EMUNAND_TYPE);
             if (user_select > 3) return 0;
             emunand_offset = (user_select == 3) ? 0 : 1;
             if (user_select == 1) n_emunands = 4;
         } else if (emunand_size_mb >= sysnand_size_mb) {
             const char* option_emunand_type[3] = { STR_REDNAND_TYPE, STR_GW_EMUNAND_TYPE, STR_DONT_SET_UP };
-            user_select = ShowSelectPrompt(3, option_emunand_type, STR_CHOOSE_EMUNAND_TYPE);
+            user_select = ShowSelectPrompt(3, option_emunand_type, "%s", STR_CHOOSE_EMUNAND_TYPE);
             if (user_select > 2) return 0;
             emunand_offset = (user_select == 2) ? 0 : 1; // 0 -> GW EmuNAND
-        } else user_select = ShowPrompt(true, STR_CLONE_SYSNAND_TO_REDNAND) ? 1 : 0;
+        } else user_select = ShowPrompt(true, "%s", STR_CLONE_SYSNAND_TO_REDNAND) ? 1 : 0;
         if (!user_select) return 0;
 
         u8 ncsd[0x200];
@@ -491,7 +491,7 @@ u32 SdFormatMenu(const char* slabel) {
             if ((ReadNandSectors(ncsd, 0, 1, 0xFF, NAND_SYSNAND) != 0) ||
                 (WriteNandSectors(ncsd, 0, 1, 0xFF, NAND_EMUNAND) != 0) ||
                 (!PathCopy("E:", "S:/nand_minsize.bin", &flags))) {
-                ShowPrompt(false, STR_CLONING_SYSNAND_TO_EMUNAND_FAILED);
+                ShowPrompt(false, "%s", STR_CLONING_SYSNAND_TO_EMUNAND_FAILED);
                 break;
             }
         }
@@ -524,7 +524,7 @@ u32 FileGraphicsViewer(const char* path) {
     if ((ret == 0) && w && h && (w <= SCREEN_WIDTH(ALT_SCREEN)) && (h <= SCREEN_HEIGHT)) {
         ClearScreenF(true, true, COLOR_STD_BG);
         DrawBitmap(ALT_SCREEN, -1, -1, w, h, bitmap);
-        ShowString(STR_PRESS_A_TO_CONTINUE);
+        ShowString("%s", STR_PRESS_A_TO_CONTINUE);
         while(!(InputWait(0) & (BUTTON_A | BUTTON_B)));
         ClearScreenF(true, true, COLOR_STD_BG);
     } else ret = 1;
@@ -744,7 +744,7 @@ u32 FileHexViewer(const char* path) {
             else if (found_size && (pad_state & BUTTON_R1) && (pad_state & BUTTON_X)) {
                 found_offset = FileFindData(path, found_data, found_size, found_offset + 1);
                 if (found_offset == (u32) -1) {
-                    ShowPrompt(false, STR_NOT_FOUND);
+                    ShowPrompt(false, "%s", STR_NOT_FOUND);
                     found_size = 0;
                 } else offset = found_offset;
                 if (MAIN_SCREEN == TOP_SCREEN) ClearScreen(TOP_SCREEN, COLOR_STD_BG);
@@ -758,21 +758,21 @@ u32 FileHexViewer(const char* path) {
                     if (new_offset != (u64) -1) offset = new_offset;
                 } else if (user_select == 2) {
                     if (!found_size) *found_data = 0;
-                    if (ShowKeyboardOrPrompt((char*) found_data, 64 + 1, STR_ENTER_SEARCH_REPEAT_SEARCH)) {
+                    if (ShowKeyboardOrPrompt((char*) found_data, 64 + 1, "%s", STR_ENTER_SEARCH_REPEAT_SEARCH)) {
                         found_size = strnlen((char*) found_data, 64);
                         found_offset = FileFindData(path, found_data, found_size, offset);
                         if (found_offset == (u32) -1) {
-                            ShowPrompt(false, STR_NOT_FOUND);
+                            ShowPrompt(false, "%s", STR_NOT_FOUND);
                             found_size = 0;
                         } else offset = found_offset;
                     }
                 } else if (user_select == 3) {
                     u32 size = found_size;
-                    if (ShowDataPrompt(found_data, &size, STR_ENTER_SEARCH_REPEAT_SEARCH)) {
+                    if (ShowDataPrompt(found_data, &size, "%s", STR_ENTER_SEARCH_REPEAT_SEARCH)) {
                         found_size = size;
                         found_offset = FileFindData(path, found_data, size, offset);
                         if (found_offset == (u32) -1) {
-                            ShowPrompt(false, STR_NOT_FOUND);
+                            ShowPrompt(false, "%s", STR_NOT_FOUND);
                             found_size = 0;
                         } else offset = found_offset;
                     }
@@ -799,7 +799,7 @@ u32 FileHexViewer(const char* path) {
                 for (u32 i = 0; i < edit_bsize; i++) if (buffer[i] != buffer_cpy[i]) diffs++;
                 if (diffs && ShowPrompt(true, STR_MADE_EDITS_SAVE_CHANGES, diffs))
                     if (!FileSetData(path, buffer, min(edit_bsize, (fsize - edit_start)), edit_start, false))
-                        ShowPrompt(false, STR_FAILED_WRITING_TO_FILE);
+                        ShowPrompt(false, "%s", STR_FAILED_WRITING_TO_FILE);
                 data = buffer;
                 last_offset = (u32) -1; // force reload from file
             } else if (pad_state & BUTTON_A) {
