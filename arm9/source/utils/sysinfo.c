@@ -43,6 +43,7 @@ const char* salesRegion(char serial_char) {
         case 'U': return STR_REGION_UNITED_KINGDOM;
         case 'S': return STR_REGION_MIDDLE_EAST; // "S" = Saudi Arabia?  Singapore?  (Southeast Asia included.)
         case 'A': return STR_REGION_AUSTRALIA;
+        case 'B': return STR_REGION_BRAZIL;
         default:  return STR_REGION_UNKNOWN;
     }
 }
