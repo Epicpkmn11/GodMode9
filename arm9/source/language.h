@@ -1,5 +1,5 @@
 #pragma once
 
 #define STRING(what, def) extern const char *STR_##what;
-#include "language.ja.inl"
+#include "language.en.inl"
 #undef STRING

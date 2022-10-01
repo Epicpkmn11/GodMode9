@@ -6,6 +6,7 @@
 #include "common.h"
 #include "fsinit.h"
 #include "fsutil.h"
+#include "language.h"
 #include "qrcodegen.h"
 #include "power.h"
 #include "rtc.h"
@@ -119,7 +120,7 @@ void XRQ_DumpRegisters(u32 xrq, u32 *regs)
     u8 qrcode[qrcodegen_BUFFER_LEN_MAX];
     u8 temp[qrcodegen_BUFFER_LEN_MAX];
     DrawStringF(MAIN_SCREEN, draw_x, draw_y_upd, COLOR_STD_FONT, COLOR_STD_BG,
-        "%-29.29s", "Generating QR code...");
+        "%-29.29s", STR_GENERATING_QR_CODE);
     if (qrcodegen_encodeText(dumpstr, temp, qrcode, qrcodegen_Ecc_LOW,
         qrcodegen_VERSION_MIN, qrcodegen_VERSION_MAX, qrcodegen_Mask_AUTO, true)) {
         DrawQrCode(ALT_SCREEN, qrcode);
@@ -127,7 +128,7 @@ void XRQ_DumpRegisters(u32 xrq, u32 *regs)
 
     /* Reinitialize SD */
     DrawStringF(MAIN_SCREEN, draw_x, draw_y_upd, COLOR_STD_FONT, COLOR_STD_BG,
-        "%-29.29s", "Reinitializing SD card...");
+        "%-29.29s", STR_REINITIALIZING_SD_CARD);
     while (!InitSDCardFS()) {
         if (InputWait(1) & BUTTON_POWER) PowerOff();
         DeinitSDCardFS();
@@ -140,7 +141,7 @@ void XRQ_DumpRegisters(u32 xrq, u32 *regs)
         (u32) dstime.bcd_Y, (u32) dstime.bcd_M, (u32) dstime.bcd_D,
         (u32) dstime.bcd_h, (u32) dstime.bcd_m, (u32) dstime.bcd_s);
     DrawStringF(MAIN_SCREEN, draw_x, draw_y_upd, COLOR_STD_FONT, COLOR_STD_BG,
-        "%-29.29s", "Dumping state to SD card...");
+        "%-29.29s", STR_DUMPING_STATE_TO_SD_CARD);
     FileSetData(path, dumpstr, wstr - dumpstr, 0, true);
 
     /* Deinit SD */
@@ -148,7 +149,7 @@ void XRQ_DumpRegisters(u32 xrq, u32 *regs)
 
     /* Done, wait for user power off */
     DrawStringF(MAIN_SCREEN, draw_x, draw_y_upd, COLOR_STD_FONT, COLOR_STD_BG,
-        "%-29.29s", "Press POWER to turn off");
+        "%-29.29s", STR_PRESS_POWER_TO_TURN_OFF);
     while (!(InputWait(0) & BUTTON_POWER));
     PowerOff();
 
