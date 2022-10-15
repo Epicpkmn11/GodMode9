@@ -1,9 +1,18 @@
 #include "language.h"
 #include "cJSON.h"
+#include "fsdrive.h"
+#include "fsutil.h"
+#include "support.h"
+#include "ui.h"
 
 #define STRING(what, def) char *STR_##what = NULL;
 #include "language.inl"
 #undef STRING
+
+typedef struct {
+	char name[256];
+	char path[256];
+} Language;
 
 static char *getString(const cJSON *json, const char *key, const char *fallback) {
 	cJSON *item = cJSON_GetObjectItemCaseSensitive(json, key);
@@ -68,4 +77,52 @@ bool GetLanguage(const char *data, char *languageName) {
 	}
 
 	return str != NULL;
+}
+
+int compLanguage(const void *e1, const void *e2) {
+	const Language *entry2 = (const Language *) e2;
+	const Language *entry1 = (const Language *) e1;
+	return strncasecmp(entry1->name, entry2->name, 256);
+}
+
+bool LanguageMenu(char *result, const char *title) {
+	DirStruct *langDir = (DirStruct *)malloc(sizeof(DirStruct));
+	if (!langDir) return false;
+
+	char path[256];
+	if (!GetSupportDir(path, LANGUAGES_DIR)) return false;
+	GetDirContents(langDir, path);
+
+	char *header = (char *)malloc(0x2C0);
+	Language *langs = (Language *)malloc(langDir->n_entries * sizeof(Language));
+	int langCount = 0;
+
+	// Find all valid files and get their language names
+	for (u32 i = 0; i < langDir->n_entries; i++) {
+		if (langDir->entry[i].type == T_FILE) {
+			FileGetData(langDir->entry[i].path, header, 0x2C0, 0);
+			if (GetLanguage(header, langs[langCount].name)) {
+				memcpy(langs[langCount].path, langDir->entry[i].path, 256);
+				langCount++;
+			}
+		}
+	}
+
+	free(langDir);
+	free(header);
+
+	qsort(langs, langCount, sizeof(Language), compLanguage);
+
+	// Make an array of just the names for the select promt
+	const char *langNames[langCount];
+	for (int i = 0; i < langCount; i++) {
+		langNames[i] = langs[i].name;
+	}
+
+	u32 selected = ShowSelectPrompt(langCount, langNames, "%s", title);
+	if (selected > 0 && result) {
+		memcpy(result, langs[selected - 1].path, 256);
+	}
+
+	return selected > 0;
 }

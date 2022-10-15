@@ -8,3 +8,5 @@
 
 bool SetLanguage(const char *jsonStr, int jsonStrLen);
 bool GetLanguage(const char *data, char *languageName);
+
+bool LanguageMenu(char *result, const char *title);
