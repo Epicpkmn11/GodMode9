@@ -2456,6 +2456,20 @@ u32 GodMode(int entrypoint) {
                     free(data);
                 }
             }
+
+            // Try load font with the same name
+            char *ext = strstr(loadpath, ".trf");
+            strcpy(ext, ".frf");
+            fsize = FileGetSize(loadpath);
+            if (fsize > 0) {
+                char* data = (char*)malloc(fsize);
+                if (data) {
+                    FileGetData(loadpath, data, fsize, 0);
+                    SaveSupportFile("font.frf", data, fsize);
+                    SetFont(data, fsize);
+                    free(data);
+                }
+            }
         }
     }
 
@@ -2959,6 +2973,20 @@ u32 GodMode(int entrypoint) {
                                 SaveSupportFile("language.trf", data, fsize);
                                 SetLanguage(data, fsize);
                                 free(data);
+                            }
+
+                            // Try load font with the same name
+                            char *ext = strstr(loadpath, ".trf");
+                            strcpy(ext, ".frf");
+                            fsize = FileGetSize(loadpath);
+                            if (fsize > 0) {
+                                char* data = (char*)malloc(fsize);
+                                if (data) {
+                                    FileGetData(loadpath, data, fsize, 0);
+                                    SaveSupportFile("font.frf", data, fsize);
+                                    SetFont(data, fsize);
+                                    free(data);
+                                }
                             }
                         }
                         GetDirContents(current_dir, current_path);
