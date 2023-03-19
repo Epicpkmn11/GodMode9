@@ -1,82 +1,121 @@
 #include "language.h"
-#include "cJSON.h"
 #include "fsdrive.h"
 #include "fsutil.h"
 #include "support.h"
 #include "ui.h"
 
-#define STRING(what, def) char *STR_##what = NULL;
+#define STRING(what, def) const char *STR_##what = NULL;
 #include "language.inl"
 #undef STRING
 
+static const char **translation_ptrs[] = {
+	#define STRING(what, def) &STR_##what,
+	#include "language.inl"
+	#undef STRING
+};
+
+static const char *translation_fallbacks[] = {
+	#define STRING(what, def) def,
+	#include "language.inl"
+	#undef STRING
+};
+
+static u8 *translation_data = NULL;
+
 typedef struct {
-	char name[256];
+	char name[32];
 	char path[256];
 } Language;
 
-static char *getString(const cJSON *json, const char *key, const char *fallback) {
-	cJSON *item = cJSON_GetObjectItemCaseSensitive(json, key);
+bool SetLanguage(const void *translation, u32 translation_size) {
+	u32 str_count;
+	u8* ptr = NULL;
 
-	if (item && item->valuestring)
-		return strdup(item->valuestring);
-	else
-		return strdup(fallback);
-}
+	if ((ptr = GetLanguage(translation, translation_size, NULL, &str_count, NULL))) {
+		// character data
+		if (memcmp(ptr, "SDAT", 4) == 0) {
+			u32 section_size;
+			memcpy(&section_size, ptr + 4, sizeof(u32));
 
-bool SetLanguage(const char *jsonStr, int jsonStrLen) {
-	// Free strings if loaded
-	#define STRING(what, def) if (STR_##what) free(STR_##what);
-	#include "language.inl"
-	#undef STRING
+			if (translation_data) free(translation_data);
+			translation_data = malloc(section_size);
+			if (!translation_data) goto fallback;
 
-	cJSON *json = cJSON_ParseWithLength(jsonStr, jsonStrLen);
-	if (!json) {
-		// Reset to defaults
-		#define STRING(what, def) STR_##what = strdup(def);
-		#include "language.inl"
-		#undef STRING
+			memcpy(translation_data, ptr + 8, section_size);
 
-		return false;
-	}
+			ptr += 8 + section_size;
+		} else goto fallback;
 
-	// Load all the strings from the JSON
-	#define STRING(what, def) STR_##what = getString(json, ""#what, def);
-	#include "language.inl"
-	#undef STRING
+		// character map
+		if (memcmp(ptr, "SMAP", 4) == 0) {
+			u32 section_size;
+			memcpy(&section_size, ptr + 4, sizeof(u32));
 
-	cJSON_Delete(json);
+			u16 *string_map = (u16*)((u32)ptr + 8);
 
-	return true;
-}
-
-bool GetLanguage(const char *data, char *languageName) {
-	// Not parsing as JSON since A) it's faster and B) this is used on just the
-	// 'header' of the file in type checking. For that reason the "GM9_LANGUAGE"
-	// *must* be in the first 0x2C0 bytes of the file.
-
-	const char *str = strstr(data, "\"GM9_LANGUAGE\"");
-
-	// If we were given a languageName pointer, copy the name into it
-	if (str && languageName) {
-		const char *start = strchr(str, ':');
-		if (start) {
-			start = strchr(start, '"');
-			if (start) {
-				start++;
-				const char *end = strchr(start, '"');
-				if (end) {
-					int strLen = end - start;
-
-					memcpy(languageName, start, strLen);
-					languageName[strLen] = '\0';
+			// Load all the strings
+			for (u32 i = 0; i < countof(translation_ptrs); i++) {
+				if (i < str_count) {
+					*translation_ptrs[i] = (char*)(translation_data + string_map[i]);
 				} else {
-					strcpy(languageName, start);
+					*translation_ptrs[i] = translation_fallbacks[i];
 				}
 			}
-		}
+
+			ptr += 8 + section_size;
+		} else goto fallback;
+
+		return true;
 	}
 
-	return str != NULL;
+fallback:
+	if (translation_data) {
+		free(translation_data);
+		translation_data = NULL;
+	}
+
+	for (u32 i = 0; i < countof(translation_ptrs); i++) {
+		*translation_ptrs[i] = translation_fallbacks[i];
+	}
+
+	return false;
+}
+
+u8 *GetLanguage(const void *riff, const u32 riff_size, u32 *version, u32 *count, char *language_name) {
+	u8 *ptr = (u8*) riff;
+	u32 riff_version = 0;
+	u32 riff_count = 0;
+	char riff_lang_name[32] = "";
+
+	// check header magic, then skip over
+	if (!ptr || memcmp(ptr, "RIFF", 4) != 0) return NULL;
+
+	// ensure enough space is allocated
+	u32 data_size;
+	memcpy(&data_size, ptr + 4, sizeof(u32));
+	if (data_size > riff_size) return NULL;
+
+	ptr += 8;
+
+	// check for and load META section
+	if (memcmp(ptr, "META", 4) == 0) {
+		u32 section_size;
+		memcpy(&section_size, ptr + 4, sizeof(u32));
+		if (section_size != 40) return NULL;
+
+		memcpy(&riff_version, ptr + 8, sizeof(u32));
+		memcpy(&riff_count, ptr + 12, sizeof(u32));
+		memcpy(riff_lang_name, ptr + 16, 31);
+		if (riff_version != TRANSLATION_VER || riff_count > countof(translation_ptrs)) return NULL;
+
+		ptr += 8 + section_size;
+	} else return NULL;
+
+	// all good
+	if (version) *version = riff_version;
+	if (count) *count = riff_count;
+	if (language_name) strcpy(language_name, riff_lang_name);
+	return ptr;
 }
 
 int compLanguage(const void *e1, const void *e2) {
@@ -100,8 +139,9 @@ bool LanguageMenu(char *result, const char *title) {
 	// Find all valid files and get their language names
 	for (u32 i = 0; i < langDir->n_entries; i++) {
 		if (langDir->entry[i].type == T_FILE) {
+			size_t fsize = FileGetSize(langDir->entry[i].path);
 			FileGetData(langDir->entry[i].path, header, 0x2C0, 0);
-			if (GetLanguage(header, langs[langCount].name)) {
+			if (GetLanguage(header, fsize, NULL, NULL, langs[langCount].name)) {
 				memcpy(langs[langCount].path, langDir->entry[i].path, 256);
 				langCount++;
 			}

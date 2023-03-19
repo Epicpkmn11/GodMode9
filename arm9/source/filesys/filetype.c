@@ -129,7 +129,7 @@ u64 IdentifyFileType(const char* path) {
         return FONT_PBM;
     } else if (GetFontFromRiff(data, fsize, NULL, NULL, NULL)) {
         return FONT_RIFF;
-    } else if (GetLanguage(data, NULL)) {
+    } else if (GetLanguage(data, fsize, NULL, NULL, NULL)) {
         return TRANSLATION;
     } else if ((fsize > sizeof(AgbHeader)) &&
         (ValidateAgbHeader((AgbHeader*) data) == 0)) {

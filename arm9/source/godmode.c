@@ -2145,12 +2145,12 @@ u32 FileHandlerMenu(char* current_path, u32* cursor, u32* scroll, PaneData** pan
         return 0;
     }
     else if (user_select == translation) { // set translation
-        char* json = (char*) malloc(0x20000); // arbitrary, should be enough by far
-        if (!json) return 1;
-        u32 json_size = FileGetData(file_path, json, 0x20000, 0);
-        if (json_size) SetLanguage(json, json_size);
+        u8* translation = (u8*) malloc(0x20000); // arbitrary, should be enough by far
+        if (!translation) return 1;
+        u32 translation_size = FileGetData(file_path, translation, 0x20000, 0);
+        if (translation_size) SetLanguage(translation, translation_size);
         ClearScreenF(true, true, COLOR_STD_BG);
-        free(json);
+        free(translation);
         return 0;
     }
     else if (user_select == view) { // view gfx
@@ -2182,7 +2182,7 @@ u32 FileHandlerMenu(char* current_path, u32* cursor, u32* scroll, PaneData** pan
             if (SetAsSupportFile("font.pbm", file_path))
                 ShowPrompt(false, "%s\n%s", pathstr, STR_FONT_WILL_BE_ACTIVE_ON_NEXT_BOOT);
         } else if (filetype & TRANSLATION) {
-            if (SetAsSupportFile("language.json", file_path))
+            if (SetAsSupportFile("language.trf", file_path))
                 ShowPrompt(false, "%s\n%s", pathstr, STR_LANGUAGE_WILL_BE_ACTIVE_ON_NEXT_BOOT);
         }
         return 0;
@@ -2431,16 +2431,17 @@ u32 GodMode(int entrypoint) {
     }
 
     // language handling
-    if (CheckSupportFile("language.json")) {
-        char* json = (char*) malloc(0x20000); // arbitrary, should be enough by far
-        if (json) {
-            u32 json_size = LoadSupportFile("language.json", json, 0x20000);
-            if (json_size) SetLanguage(json, json_size);
-            free(json);
-        } else {
-            SetLanguage(NULL, 0);
+    bool language_loaded = false;
+    if (CheckSupportFile("language.trf")) {
+        char* translation = (char*) malloc(0x20000); // arbitrary, should be enough by far
+        if (translation) {
+            u32 translation_size = LoadSupportFile("language.trf", translation, 0x20000);
+            if (translation_size) language_loaded = SetLanguage(translation, translation_size);
+            free(translation);
         }
-    } else {
+    }
+
+    if (!language_loaded) {
         SetLanguage(NULL, 0);
 
         char loadpath[256];
@@ -2450,7 +2451,7 @@ u32 GodMode(int entrypoint) {
                 char* data = (char*)malloc(fsize);
                 if (data) {
                     FileGetData(loadpath, data, fsize, 0);
-                    SaveSupportFile("language.json", data, fsize);
+                    SaveSupportFile("language.trf", data, fsize);
                     SetLanguage(data, fsize);
                     free(data);
                 }
@@ -2955,7 +2956,7 @@ u32 GodMode(int entrypoint) {
                             char* data = (char*)malloc(fsize);
                             if (data) {
                                 FileGetData(loadpath, data, fsize, 0);
-                                SaveSupportFile("language.json", data, fsize);
+                                SaveSupportFile("language.trf", data, fsize);
                                 SetLanguage(data, fsize);
                                 free(data);
                             }

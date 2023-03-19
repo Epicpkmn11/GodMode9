@@ -210,15 +210,16 @@ u8* GetFontFromRiff(const void* riff, const u32 riff_size, u32* w, u32* h, u16* 
 
     // check for and load META section
     if (memcmp(ptr, "META", 4) == 0) {
+        u32 section_size;
+        memcpy(&section_size, ptr + 4, sizeof(u32));
+        if (section_size != 4) return NULL;
+
         riff_w = ptr[8];
         riff_h = ptr[9];
         memcpy(&riff_count, ptr + 10, sizeof(u16));
-
-        u32 section_size;
-        memcpy(&section_size, ptr + 4, sizeof(u32));
-        ptr += 8 + section_size;
-
         if (riff_w > FONT_MAX_WIDTH || riff_h > FONT_MAX_HEIGHT) return NULL;
+
+        ptr += 8 + section_size;
     } else return NULL;
 
     // all good

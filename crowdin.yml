@@ -3,5 +3,5 @@ api_token_env: CROWDIN_TOKEN
 preserve_hierarchy: true
 
 files:
-  - source: /resources/gm9/languages/en.json
-    translation: /resources/gm9/languages/%two_letters_code%.json
+  - source: /resources/languages/source.json
+    translation: /resources/languages/%two_letters_code%.json

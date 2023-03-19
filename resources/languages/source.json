@@ -1,5 +1,5 @@
 {
-	"GM9_LANGUAGE": "English",
+	"GM9_LANGUAGE": "[LANGUAGE NAME]",
 	"FIRM_TOO_BIG": "FIRM too big, can't boot",
 	"PATH_DO_NOT_BOOT_UNTRUSTED": "%s (%dkB)\nWarning: Do not boot FIRMs\nfrom untrusted sources.\n \nBoot FIRM?",
 	"NOT_BOOTABLE_FIRM": "Not a bootable FIRM.",

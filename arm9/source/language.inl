@@ -1,3 +1,7 @@
+// This is to be incremented every time the order changes
+// New strings added to the end will not cause issues
+#define TRANSLATION_VER 1
+
 STRING(FIRM_TOO_BIG, "FIRM too big, can't boot")
 STRING(PATH_DO_NOT_BOOT_UNTRUSTED, "%s (%dkB)\nWarning: Do not boot FIRMs\nfrom untrusted sources.\n \nBoot FIRM?")
 STRING(NOT_BOOTABLE_FIRM, "Not a bootable FIRM.")
