@@ -393,14 +393,14 @@ void DrawDirContents(DirStruct* contents, u32 cursor, u32* scroll) {
         if (offset_i < contents->n_entries) {
             DirEntry* curr_entry = &(contents->entry[offset_i]);
             char namestr[UTF_BUFFER_BYTESIZE(str_width - 10)];
-            char bytestr[10 + 1];
+            char rawbytestr[32], bytestr[UTF_BUFFER_BYTESIZE(10)];
             color_font = (cursor != offset_i) ? COLOR_ENTRY(curr_entry) : COLOR_STD_FONT;
-            FormatBytes(bytestr, curr_entry->size);
+            FormatBytes(rawbytestr, curr_entry->size);
+            ResizeString(bytestr, (curr_entry->type == T_DIR) ? STR_DIR : (curr_entry->type == T_DOTDOT) ? "(..)" : rawbytestr, 10, 10, true);
             ResizeString(namestr, curr_entry->name, str_width - 10, str_width - 20, false);
-            snprintf(tempstr, str_width * 4 + 1, "%s%10.10s", namestr,
-                (curr_entry->type == T_DIR) ? STR_DIR : (curr_entry->type == T_DOTDOT) ? "(..)" : bytestr);
+            snprintf(tempstr, UTF_BUFFER_BYTESIZE(str_width), "%s%s", namestr, bytestr);
         } else snprintf(tempstr, str_width + 1, "%-*.*s", str_width, str_width, "");
-        DrawStringF(ALT_SCREEN, pos_x, pos_y, color_font, COLOR_STD_BG, "%s", tempstr);
+        DrawString(ALT_SCREEN, tempstr, pos_x, pos_y, color_font, COLOR_STD_BG);
         pos_y += stp_y;
     }
 
@@ -852,7 +852,7 @@ u32 ShaCalculator(const char* path, bool sha1) {
         ShowPrompt(false, STR_CALCULATING_SHA_FAILED, sha1 ? "1" : "256");
         return 1;
     } else {
-        static char pathstr_prev[32 + 1] = { 0 };
+        static char pathstr_prev[UTF_BUFFER_BYTESIZE(32)] = { 0 };
         static u8 hash_prev[32] = { 0 };
         char sha_path[256];
         u8 sha_file[32];
@@ -878,7 +878,7 @@ u32 ShaCalculator(const char* path, bool sha1) {
             FileSetData(sha_path, hash, hashlen, 0, true);
         }
 
-        strncpy(pathstr_prev, pathstr, 32 + 1);
+        strncpy(pathstr_prev, pathstr, UTF_BUFFER_BYTESIZE(32));
         memcpy(hash_prev, hash, hashlen);
     }
 

@@ -102,15 +102,15 @@ bool GetRootDirContentsWorker(DirStruct* contents) {
         if (!DriveType(drvnum[i])) continue; // drive not available
         entry->p_name = 4;
         entry->name = entry->path + entry->p_name;
-        memset(entry->path, 0x00, 64);
+        memset(entry->path, 0x00, 256);
         snprintf(entry->path,  4, "%s", drvnum[i]);
         if ((*(drvnum[i]) >= '7') && (*(drvnum[i]) <= '9') && !(GetMountState() & IMG_NAND)) // Drive 7...9 handling
-            snprintf(entry->name, 32, "[%s] %s", drvnum[i],
+            snprintf(entry->name, 252, "[%s] %s", drvnum[i],
                 (*(drvnum[i]) == '7') ? STR_LAB_FAT_IMAGE :
                 (*(drvnum[i]) == '8') ? STR_LAB_BONUS_DRIVE :
                 (*(drvnum[i]) == '9') ? STR_LAB_RAMDRIVE : "UNK");
         else if (*(drvnum[i]) == 'G') // Game drive special handling
-            snprintf(entry->name, 32, "[%s] %s %s", drvnum[i],
+            snprintf(entry->name, 252, "[%s] %s %s", drvnum[i],
                 (GetMountState() & GAME_CIA  ) ? "CIA"   :
                 (GetMountState() & GAME_NCSD ) ? "NCSD"  :
                 (GetMountState() & GAME_NCCH ) ? "NCCH"  :
@@ -120,10 +120,10 @@ bool GetRootDirContentsWorker(DirStruct* contents) {
                 (GetMountState() & SYS_FIRM  ) ? "FIRM"  :
                 (GetMountState() & GAME_TAD  ) ? "DSIWARE" : "UNK", drvname[i]);
         else if (*(drvnum[i]) == 'C') // Game cart handling
-            snprintf(entry->name, 32, "[%s] %s (%s)", drvnum[i], drvname[i], carttype);
+            snprintf(entry->name, 252, "[%s] %s (%s)", drvnum[i], drvname[i], carttype);
         else if (*(drvnum[i]) == '0') // SD card handling
-            snprintf(entry->name, 32, "[%s] %s (%s)", drvnum[i], drvname[i], sdlabel);
-        else snprintf(entry->name, 32, "[%s] %s", drvnum[i], drvname[i]);
+            snprintf(entry->name, 252, "[%s] %s (%s)", drvnum[i], drvname[i], sdlabel);
+        else snprintf(entry->name, 252, "[%s] %s", drvnum[i], drvname[i]);
         entry->size = GetTotalSpace(entry->path);
         entry->type = T_ROOT;
         entry->marked = 0;

@@ -578,18 +578,13 @@ void ResizeString(char* dest, const char* orig, int nlength, int tpos, bool alig
 
     if (nlength < olength) {
         TruncateString(dest, orig, nlength, tpos);
-    } else if (!align_right) {
-        int nsize = 0;
-        for (int i = 0; i < nlength || (orig[nsize] & 0xC0) == 0x80; nsize++) {
-            if ((orig[nsize] & 0xC0) != 0x80) i++;
-        }
-        snprintf(dest, UTF_BUFFER_BYTESIZE(nlength), "%-*.*s", nsize, nsize, orig);
     } else {
         int nsize = 0;
-        for (int i = 0; i < nlength || (orig[nsize] & 0xC0) == 0x80; nsize++) {
-            if ((orig[nsize] & 0xC0) != 0x80) i++;
+        int osize = strnlen(orig, 256);
+        for (int i = 0; i < nlength || (nsize <= osize && (orig[nsize] & 0xC0) == 0x80); nsize++) {
+            if (nsize > osize || (orig[nsize] & 0xC0) != 0x80) i++;
         }
-        snprintf(dest, UTF_BUFFER_BYTESIZE(nlength), "%*.*s", nsize, nsize, orig);
+        snprintf(dest, UTF_BUFFER_BYTESIZE(nlength), align_right ? "%*.*s" : "%-*.*s", nsize, nsize, orig);
     }
 }
 
