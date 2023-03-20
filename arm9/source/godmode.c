@@ -2801,7 +2801,7 @@ u32 GodMode(int entrypoint) {
                     if (ShowPrompt(true, STR_DELETE_FILE, namestr)) {
                         ShowString("%s", STR_DELETING_FILES_PLEASE_WAIT);
                         if (!PathDelete(curr_entry->path))
-                            ShowPrompt(false, "%s\n%s", STR_FAILED_DELETING, namestr);
+                            ShowPrompt(false, STR_FAILED_DELETING_PATH, namestr);
                         ClearScreenF(true, false, COLOR_STD_BG);
                     }
                 }
