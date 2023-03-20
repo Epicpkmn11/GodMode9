@@ -661,7 +661,7 @@ static int BEAT_Run(const char *p, const char *s, const char *d, bool bpm)
 	progress_timer = timer_start();
 	res = (bpm ? BPM_InitCTX : BPS_InitCTX)(&ctx, p, s, d);
 	if (res != BEAT_OK) {
-		ShowPrompt(false, "%s\n%s", bpm ? STR_FAILED_TO_INITIALIZE_BPM_FILE : STR_FAILED_TO_INITIALIZE_BPS_FILE, BEAT_ErrString(res));
+		ShowPrompt(false, bpm ? STR_FAILED_TO_INITIALIZE_BPM_FILE : STR_FAILED_TO_INITIALIZE_BPS_FILE, BEAT_ErrString(res));
 	} else {
 		res = (bpm ? BPM_RunActions : BPS_RunActions)(&ctx);
 		switch(res) {
@@ -672,7 +672,7 @@ static int BEAT_Run(const char *p, const char *s, const char *d, bool bpm)
 				ShowPrompt(false, "%s", STR_PATCHING_ABORTED_BY_USER);
 				break;
 			default:
-				ShowPrompt(false, "%s\n%s", STR_FAILED_TO_RUN_PATCH, BEAT_ErrString(res));
+				ShowPrompt(false, STR_FAILED_TO_RUN_PATCH, BEAT_ErrString(res));
 				break;
 		}
 	}

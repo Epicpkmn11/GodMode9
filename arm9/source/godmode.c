@@ -2849,11 +2849,11 @@ u32 GodMode(int entrypoint) {
                         if ((user_select == 1) && !PathCopy(current_path, clipboard->entry[c].path, &flags)) {
                             if (c + 1 < clipboard->n_entries) {
                                 if (!ShowPrompt(true, STR_FAILED_COPYING_PATH_PROCESS_REMAINING, namestr)) break;
-                            } else ShowPrompt(false, "%s\n%s", STR_FAILED_COPYING_PATH, namestr);
+                            } else ShowPrompt(false, STR_FAILED_COPYING_PATH, namestr);
                         } else if ((user_select == 2) && !PathMove(current_path, clipboard->entry[c].path, &flags)) {
                             if (c + 1 < clipboard->n_entries) {
                                 if (!ShowPrompt(true, STR_FAILED_MOVING_PATH_PROCESS_REMAINING, namestr)) break;
-                            } else ShowPrompt(false, "%s\n%s", STR_FAILED_MOVING_PATH, namestr);
+                            } else ShowPrompt(false, STR_FAILED_MOVING_PATH, namestr);
                         }
                     }
                     clipboard->n_entries = 0;
@@ -2873,7 +2873,7 @@ u32 GodMode(int entrypoint) {
                 snprintf(newname, 255, "%s", curr_entry->name);
                 if (ShowKeyboardOrPrompt(newname, 256, STR_RENAME_FILE_ENTER_NEW_NAME_BELOW, namestr)) {
                     if (!PathRename(curr_entry->path, newname))
-                        ShowPrompt(false, "%s\n%s", STR_FAILED_RENAMING_PATH, namestr);
+                        ShowPrompt(false, STR_FAILED_RENAMING_PATH, namestr);
                     else {
                         GetDirContents(current_dir, current_path);
                         for (cursor = (current_dir->n_entries) ? current_dir->n_entries - 1 : 0;
@@ -2893,7 +2893,7 @@ u32 GodMode(int entrypoint) {
                             ((type == 2) && !FileCreateDummy(current_path, ename, fsize))) {
                             char namestr[UTF_BUFFER_BYTESIZE(36)];
                             TruncateString(namestr, ename, 36, 12);
-                            ShowPrompt(false, "%s\n%s", (type == 1) ? STR_FAILED_CREATING_FOLDER_PATH : STR_FAILED_CREATING_FILE_PATH, namestr);
+                            ShowPrompt(false, (type == 1) ? STR_FAILED_CREATING_FOLDER_PATH : STR_FAILED_CREATING_FILE_PATH, namestr);
                         } else {
                             GetDirContents(current_dir, current_path);
                             for (cursor = (current_dir->n_entries) ? current_dir->n_entries - 1 : 0;

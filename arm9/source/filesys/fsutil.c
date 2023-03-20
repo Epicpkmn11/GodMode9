@@ -646,8 +646,7 @@ bool PathMoveCopy(const char* dest, const char* orig, u32* flags, bool move) {
             }
             const char* optionstr[5] =
                 {STR_CHOOSE_NEW_NAME, STR_OVERWRITE_FILES, STR_SKIP_FILES, STR_OVERWRITE_ALL, STR_SKIP_ALL};
-            u32 user_select = ShowSelectPrompt((*flags & ASK_ALL) ? 5 : 3, optionstr, "%s\n%s",
-                STR_DESTINATION_ALREADY_EXISTS, deststr);
+            u32 user_select = ShowSelectPrompt((*flags & ASK_ALL) ? 5 : 3, optionstr, STR_DESTINATION_ALREADY_EXISTS, deststr);
             if (user_select == 1) {
                 do {
                     if (!ShowKeyboardOrPrompt(dname, 255 - (dname - ldest), "%s", STR_CHOOSE_NEW_DESTINATION_NAME))
