@@ -248,7 +248,6 @@ void DrawTopBar(const char* curr_path) {
         const u32 bartxt_rx = SCREEN_WIDTH_TOP - (19*FONT_WIDTH_EXT) - bartxt_x;
         char bytestr0[32];
         char bytestr1[32];
-        DrawStringF(TOP_SCREEN, bartxt_rx, bartxt_start, COLOR_STD_BG, COLOR_TOP_BAR, "%19.19s", STR_LOADING);
         FormatBytes(bytestr0, GetFreeSpace(curr_path));
         FormatBytes(bytestr1, GetTotalSpace(curr_path));
         snprintf(tempstr, 64, "%s/%s", bytestr0, bytestr1);
@@ -2289,7 +2288,7 @@ u32 HomeMoreMenu(char* current_path) {
             if (!seed_sys || BuildSeedInfo(NULL, true) != 0)
                 seed_sys = seed_emu = false;
         }
-        ShowPrompt(false, STR_BUILT_IN_OUT_STATUSES, OUTPUT_PATH
+        ShowPrompt(false, STR_BUILT_IN_OUT_STATUSES, OUTPUT_PATH,
             TIKDB_NAME_ENC, tik_enc_sys ? tik_enc_emu ? STR_OK_SYS_EMU : STR_OK_SYS : STR_FAILED,
             TIKDB_NAME_DEC, tik_dec_sys ? tik_dec_emu ? STR_OK_SYS_EMU : STR_OK_SYS : STR_FAILED,
             SEEDINFO_NAME, seed_sys ? seed_emu ? STR_OK_SYS_EMU : STR_OK_SYS : STR_FAILED);
