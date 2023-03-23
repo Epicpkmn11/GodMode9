@@ -265,14 +265,15 @@ void DrawTopBar(const char* curr_path) {
     #endif
 
     if (show_time) { // clock & battery
+        char timestr[UTF_BUFFER_BYTESIZE(32)];
+        GetTimeString(timestr, false, false);
+
         const u32 battery_width = 16;
         const u32 battery_height = 9;
         const u32 battery_x = SCREEN_WIDTH_TOP - battery_width - bartxt_x;
         const u32 battery_y = (12 - battery_height) / 2;
-        const u32 clock_x = battery_x - (15*FONT_WIDTH_EXT);
+        const u32 clock_x = battery_x - (GetDrawStringWidth(timestr) + FONT_WIDTH_EXT);
 
-        char timestr[UTF_BUFFER_BYTESIZE(32)];
-        GetTimeString(timestr, false, false);
         DrawStringF(TOP_SCREEN, clock_x, bartxt_start, COLOR_STD_BG, COLOR_TOP_BAR, "%s", timestr);
         DrawBatteryBitmap(TOP_SCREEN, battery_x, battery_y, battery_width, battery_height);
     }
