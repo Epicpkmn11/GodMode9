@@ -2,6 +2,9 @@
 // New strings added to the end will not cause issues
 #define TRANSLATION_VER 1
 
+STRING(DATE_TIME_FORMAT, "%1$s%2$02lX-%3$02lX-%4$02lX %5$02lX:%6$02lX")
+STRING(DECIMAL_SEPARATOR, ".")
+STRING(THOUSAND_SEPARATOR, ",")
 STRING(FIRM_TOO_BIG, "FIRM too big, can't boot")
 STRING(PATH_DO_NOT_BOOT_UNTRUSTED, "%s (%dkB)\nWarning: Do not boot FIRMs\nfrom untrusted sources.\n \nBoot FIRM?")
 STRING(NOT_BOOTABLE_FIRM, "Not a bootable FIRM.")
@@ -804,6 +807,3 @@ STRING(SYSINFO_SD_CID, "SD CID: %s\r\n")
 STRING(SYSINFO_SYSTEM_ID0, "System ID0: %s\r\n")
 STRING(SYSINFO_SYSTEM_ID1, "System ID1: %s\r\n")
 STRING(SORTING_TICKETS_PLEASE_WAIT, "Sorting tickets, please wait ...")
-STRING(DATE_TIME_FORMAT, "%1$s%2$02lX-%3$02lX-%4$02lX %5$02lX:%6$02lX")
-STRING(DECIMAL_SEPARATOR, ".")
-STRING(THOUSAND_SEPARATOR, ",")

@@ -1,5 +1,8 @@
 {
 	"GM9_LANGUAGE": "[LANGUAGE NAME]",
+	"DATE_TIME_FORMAT": "%1$s%2$02lX-%3$02lX-%4$02lX %5$02lX:%6$02lX",
+	"DECIMAL_SEPARATOR": ".",
+	"THOUSAND_SEPARATOR": ",",
 	"FIRM_TOO_BIG": "FIRM too big, can't boot",
 	"PATH_DO_NOT_BOOT_UNTRUSTED": "%s (%dkB)\nWarning: Do not boot FIRMs\nfrom untrusted sources.\n \nBoot FIRM?",
 	"NOT_BOOTABLE_FIRM": "Not a bootable FIRM.",
@@ -801,8 +804,5 @@
 	"SYSINFO_SD_CID": "SD CID: %s\r\n",
 	"SYSINFO_SYSTEM_ID0": "System ID0: %s\r\n",
 	"SYSINFO_SYSTEM_ID1": "System ID1: %s\r\n",
-	"SORTING_TICKETS_PLEASE_WAIT": "Sorting tickets, please wait ...",
-	"DATE_TIME_FORMAT": "%1$s%2$02lX-%3$02lX-%4$02lX %5$02lX:%6$02lX",
-	"DECIMAL_SEPARATOR": ".",
-	"THOUSAND_SEPARATOR": ","
+	"SORTING_TICKETS_PLEASE_WAIT": "Sorting tickets, please wait ..."
 }
