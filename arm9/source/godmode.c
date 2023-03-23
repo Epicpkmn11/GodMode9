@@ -171,7 +171,7 @@ void GetTimeString(char* timestr, bool forced_update, bool full_year) { // times
         get_dstime(&dstime);
         timer = timer_start();
     }
-    if (timestr) snprintf(timestr, 32, "%s%02lX-%02lX-%02lX %02lX:%02lX", full_year ? "20" : "",
+    if (timestr) snprintf(timestr, UTF_BUFFER_BYTESIZE(32), STR_DATE_TIME_FORMAT, full_year ? "20" : "",
         (u32) dstime.bcd_Y, (u32) dstime.bcd_M, (u32) dstime.bcd_D, (u32) dstime.bcd_h, (u32) dstime.bcd_m);
 }
 
@@ -271,9 +271,9 @@ void DrawTopBar(const char* curr_path) {
         const u32 battery_y = (12 - battery_height) / 2;
         const u32 clock_x = battery_x - (15*FONT_WIDTH_EXT);
 
-        char timestr[32];
+        char timestr[UTF_BUFFER_BYTESIZE(32)];
         GetTimeString(timestr, false, false);
-        DrawStringF(TOP_SCREEN, clock_x, bartxt_start, COLOR_STD_BG, COLOR_TOP_BAR, "%14.14s", timestr);
+        DrawStringF(TOP_SCREEN, clock_x, bartxt_start, COLOR_STD_BG, COLOR_TOP_BAR, "%s", timestr);
         DrawBatteryBitmap(TOP_SCREEN, battery_x, battery_y, battery_width, battery_height);
     }
 }
@@ -324,7 +324,7 @@ void DrawUserInterface(const char* curr_path, DirEntry* curr_entry, u32 curr_pan
             (drvtype & DRV_SEARCH) ? STR_SEARCH : (drvtype & DRV_TITLEMAN) ? STR_TITLEMANAGER_VIRTUAL : "";
         ResizeString(tempstr, drvstr, str_len_info, 8, false);
     } else {
-        char numstr[32];
+        char numstr[UTF_BUFFER_BYTESIZE(32)];
         char bytestr[UTF_BUFFER_BYTESIZE(32)];
         FormatNumber(numstr, curr_entry->size);
         snprintf(bytestr, sizeof(bytestr), STR_N_BYTE, numstr);
@@ -2311,7 +2311,7 @@ u32 HomeMoreMenu(char* current_path) {
         DsTime dstime;
         get_dstime(&dstime);
         if (ShowRtcSetterPrompt(&dstime, "%s", STR_TITLE_SET_RTC_DATE_TIME)) {
-            char timestr[32];
+            char timestr[UTF_BUFFER_BYTESIZE(32)];
             set_dstime(&dstime);
             GetTimeString(timestr, true, true);
             ShowPrompt(false, STR_NEW_RTC_DATE_TIME_IS_TIME, timestr);
@@ -2489,7 +2489,7 @@ u32 GodMode(int entrypoint) {
         if ((DSTIMEGET(&dstime, bcd_Y) < 18) &&
              ShowPrompt(true, "%s", STR_RTC_DATE_TIME_SEEMS_TO_BE_WRONG_SET_NOW) &&
              ShowRtcSetterPrompt(&dstime, "%s", STR_TITLE_SET_RTC_DATE_TIME)) {
-            char timestr[32];
+            char timestr[UTF_BUFFER_BYTESIZE(32)];
             set_dstime(&dstime);
             GetTimeString(timestr, true, true);
             ShowPrompt(false, STR_NEW_RTC_DATE_TIME_IS_TIME, timestr);

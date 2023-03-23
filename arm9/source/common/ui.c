@@ -622,7 +622,7 @@ void FormatNumber(char* str, u64 number) { // str should be 32 byte in size
     for (; number / (mag1000 * 1000) > 0; mag1000 *= 1000);
     for (; mag1000 > 0; mag1000 /= 1000) {
         u32 pos = strnlen(str, 31);
-        snprintf(str + pos, 31 - pos, "%0*llu%c", (pos) ? 3 : 1, (number / mag1000) % 1000, (mag1000 > 1) ? ',' : '\0');
+        snprintf(str + pos, 31 - pos, "%0*llu%s", (pos) ? 3 : 1, (number / mag1000) % 1000, (mag1000 > 1) ? STR_THOUSAND_SEPARATOR : "");
     }
 }
 
@@ -635,7 +635,7 @@ void FormatBytes(char* str, u64 bytes) { // str should be 32 byte in size, just 
         u32 scale = 1;
         u64 bytes100 = (bytes * 100) >> 10;
         for(; (bytes100 >= 1024*100) && (scale < 3); scale++, bytes100 >>= 10);
-        snprintf(str, 32, "%llu.%llu%s", bytes100 / 100, (bytes100 % 100) / 10, units[scale]);
+        snprintf(str, 32, "%llu%s%llu%s", bytes100 / 100, STR_DECIMAL_SEPARATOR, (bytes100 % 100) / 10, units[scale]);
     }
 }
 
