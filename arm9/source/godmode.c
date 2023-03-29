@@ -2000,8 +2000,8 @@ u32 FileHandlerMenu(char* current_path, u32* cursor, u32* scroll, PaneData** pan
         }
         user_select = (n_opt > 1) ? (int) ShowSelectPrompt(n_opt, optionstr, "%s", pathstr) : n_opt;
         if (user_select) {
-            ShowPrompt(false, (InjectHealthAndSafety(file_path, destdrv[user_select-1]) == 0) ?
-                STR_H_AND_S_INJECT_SUCCESS : STR_H_AND_S_INJECT_FAILURE, pathstr);
+            ShowPrompt(false, "%s\n%s", pathstr, (InjectHealthAndSafety(file_path, destdrv[user_select-1]) == 0) ?
+                STR_H_AND_S_INJECT_SUCCESS : STR_H_AND_S_INJECT_FAILURE);
         }
         return 0;
     }
