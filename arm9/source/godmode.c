@@ -248,6 +248,9 @@ void DrawTopBar(const char* curr_path) {
         const u32 bartxt_rx = SCREEN_WIDTH_TOP - (19*FONT_WIDTH_EXT) - bartxt_x;
         char bytestr0[32];
         char bytestr1[32];
+        char tempstr[UTF_BUFFER_BYTESIZE(19)];
+        ResizeString(tempstr, STR_LOADING, 19, 19, true);
+        DrawString(TOP_SCREEN, tempstr, bartxt_rx, bartxt_start, COLOR_STD_BG, COLOR_TOP_BAR);
         FormatBytes(bytestr0, GetFreeSpace(curr_path));
         FormatBytes(bytestr1, GetTotalSpace(curr_path));
         snprintf(tempstr, sizeof(tempstr), "%s/%s", bytestr0, bytestr1);
