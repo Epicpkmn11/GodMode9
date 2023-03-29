@@ -4,30 +4,30 @@
 #include "support.h"
 #include "ui.h"
 
-#define STRING(what, def) const char *STR_##what = NULL;
+#define STRING(what, def) const char* STR_##what = NULL;
 #include "language.inl"
 #undef STRING
 
-static const char **translation_ptrs[] = {
+static const char** translation_ptrs[] = {
 	#define STRING(what, def) &STR_##what,
 	#include "language.inl"
 	#undef STRING
 };
 
-static const char *translation_fallbacks[] = {
+static const char* translation_fallbacks[] = {
 	#define STRING(what, def) def,
 	#include "language.inl"
 	#undef STRING
 };
 
-static u8 *translation_data = NULL;
+static u8* translation_data = NULL;
 
 typedef struct {
 	char name[32];
 	char path[256];
 } Language;
 
-bool SetLanguage(const void *translation, u32 translation_size) {
+bool SetLanguage(const void* translation, u32 translation_size) {
 	u32 str_count;
 	u8* ptr = NULL;
 
@@ -51,7 +51,7 @@ bool SetLanguage(const void *translation, u32 translation_size) {
 			u32 section_size;
 			memcpy(&section_size, ptr + 4, sizeof(u32));
 
-			u16 *string_map = (u16*)((u32)ptr + 8);
+			u16* string_map = (u16*)((u32)ptr + 8);
 
 			// Load all the strings
 			for (u32 i = 0; i < countof(translation_ptrs); i++) {
@@ -81,8 +81,8 @@ fallback:
 	return false;
 }
 
-u8 *GetLanguage(const void *riff, const u32 riff_size, u32 *version, u32 *count, char *language_name) {
-	u8 *ptr = (u8*) riff;
+u8* GetLanguage(const void* riff, const u32 riff_size, u32* version, u32* count, char* language_name) {
+	u8* ptr = (u8*) riff;
 	u32 riff_version = 0;
 	u32 riff_count = 0;
 	char riff_lang_name[32] = "";
@@ -118,22 +118,22 @@ u8 *GetLanguage(const void *riff, const u32 riff_size, u32 *version, u32 *count,
 	return ptr;
 }
 
-int compLanguage(const void *e1, const void *e2) {
-	const Language *entry2 = (const Language *) e2;
-	const Language *entry1 = (const Language *) e1;
+int compLanguage(const void* e1, const void* e2) {
+	const Language* entry2 = (const Language*) e2;
+	const Language* entry1 = (const Language*) e1;
 	return strncasecmp(entry1->name, entry2->name, 32);
 }
 
-bool LanguageMenu(char *result, const char *title) {
-	DirStruct *langDir = (DirStruct *)malloc(sizeof(DirStruct));
+bool LanguageMenu(char* result, const char* title) {
+	DirStruct* langDir = (DirStruct*)malloc(sizeof(DirStruct));
 	if (!langDir) return false;
 
 	char path[256];
 	if (!GetSupportDir(path, LANGUAGES_DIR)) return false;
 	GetDirContents(langDir, path);
 
-	char *header = (char *)malloc(0x2C0);
-	Language *langs = (Language *)malloc(langDir->n_entries * sizeof(Language));
+	char* header = (char*)malloc(0x2C0);
+	Language* langs = (Language*)malloc(langDir->n_entries * sizeof(Language));
 	int langCount = 0;
 
 	// Find all valid files and get their language names
@@ -154,7 +154,7 @@ bool LanguageMenu(char *result, const char *title) {
 	qsort(langs, langCount, sizeof(Language), compLanguage);
 
 	// Make an array of just the names for the select promt
-	const char *langNames[langCount];
+	const char* langNames[langCount];
 	for (int i = 0; i < langCount; i++) {
 		langNames[i] = langs[i].name;
 	}
