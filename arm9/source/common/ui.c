@@ -211,14 +211,14 @@ const u8* GetFontFromRiff(const void* riff, const u32 riff_size, u32* w, u32* h,
     // check header magic and load size
     if (!ptr) return NULL;
     riff_header = ptr;
-    if(memcmp(riff_header->chunk_id, "RIFF", 4) != 0) return NULL;
+    if (memcmp(riff_header->chunk_id, "RIFF", 4) != 0) return NULL;
 
     // ensure enough space is allocated
     if (riff_header->size > riff_size) return NULL;
 
     ptr += sizeof(RiffChunkHeader);
 
-    while ((u32)(ptr - riff) < riff_header->size) {
+    while ((u32)(ptr - riff) < riff_header->size + sizeof(RiffChunkHeader)) {
         chunk_header = ptr;
 
         // check for and load META section
@@ -269,7 +269,7 @@ bool SetFont(const void* font, u32 font_size) {
         // load total size
         riff_header = font;
 
-        while (((u32)ptr - (u32)font) < riff_header->size) {
+        while (((u32)ptr - (u32)font) < riff_header->size + sizeof(RiffChunkHeader)) {
             chunk_header = (const void *)ptr;
 
             if (memcmp(chunk_header->chunk_id, "CDAT", 4) == 0) { // character data

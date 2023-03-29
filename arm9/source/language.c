@@ -46,24 +46,28 @@ bool SetLanguage(const void* translation, u32 translation_size) {
     const RiffChunkHeader* chunk_header;
 
     // Free old translation data
-        if (translation_data) free(translation_data);
+    if (translation_data) {
+        free(translation_data);
         translation_data = NULL;
+    }
 
     if ((ptr = GetLanguage(translation, translation_size, NULL, &str_count, NULL))) {
         // load total size
         riff_header = translation;
 
-        while ((u32)(ptr - translation) < riff_header->size) {
+        while ((u32)(ptr - translation) < riff_header->size + sizeof(RiffChunkHeader)) {
             chunk_header = ptr;
 
             if (memcmp(chunk_header->chunk_id, "SDAT", 4) == 0) { // string data
-                translation_data = malloc(chunk_header->size);
-                if (!translation_data) goto fallback;
+                if (chunk_header->size > 0) {
+                    translation_data = malloc(chunk_header->size);
+                    if (!translation_data) goto fallback;
 
-                memcpy(translation_data, ptr + sizeof(RiffChunkHeader), chunk_header->size);
+                    memcpy(translation_data, ptr + sizeof(RiffChunkHeader), chunk_header->size);
+                }
             } else if (memcmp(chunk_header->chunk_id, "SMAP", 4) == 0) { // string map
                 // string data must come before the map
-                if(!translation_data) goto fallback;
+                if (!translation_data && str_count > 0) goto fallback;
 
                 u16* string_map = (u16*)(ptr + sizeof(RiffChunkHeader));
 
@@ -104,14 +108,14 @@ const void* GetLanguage(const void* riff, const u32 riff_size, u32* version, u32
     // check header magic and load size
     if (!ptr) return NULL;
     riff_header = ptr;
-    if(memcmp(riff_header->chunk_id, "RIFF", 4) != 0) return NULL;
+    if (memcmp(riff_header->chunk_id, "RIFF", 4) != 0) return NULL;
 
     // ensure enough space is allocated
     if (riff_header->size > riff_size) return NULL;
 
     ptr += sizeof(RiffChunkHeader);
 
-    while ((u32)(ptr - riff) < riff_header->size) {
+    while ((u32)(ptr - riff) < riff_header->size + sizeof(RiffChunkHeader)) {
         chunk_header = ptr;
 
         // check for and load META section
