@@ -226,14 +226,13 @@ const u8* GetFontFromRiff(const void* riff, const u32 riff_size, u32* w, u32* h,
 
             if (chunk_header->size != 4) return NULL;
 
-            FontMeta meta;
-            memcpy(&meta, ptr + sizeof(RiffChunkHeader), sizeof(FontMeta));
-            if (meta.width > FONT_MAX_WIDTH || meta.height > FONT_MAX_HEIGHT) return NULL;
+            const FontMeta *meta = ptr + sizeof(RiffChunkHeader);
+            if (meta->width > FONT_MAX_WIDTH || meta->height > FONT_MAX_HEIGHT) return NULL;
 
             // all good
-            if (w) *w = meta.width;
-            if (h) *h = meta.height;
-            if (count) *count = meta.count;
+            if (w) *w = meta->width;
+            if (h) *h = meta->height;
+            if (count) *count = meta->count;
             return ptr;
         }
 

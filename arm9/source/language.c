@@ -118,14 +118,13 @@ const void* GetLanguage(const void* riff, const u32 riff_size, u32* version, u32
 		if (memcmp(chunk_header->chunk_id, "META", 4) == 0) {
 			if (chunk_header->size != sizeof(LanguageMeta)) return NULL;
 
-			LanguageMeta meta;
-			memcpy(&meta, ptr + 8, sizeof(LanguageMeta));
-			if (meta.version != TRANSLATION_VER || meta.count > countof(translation_ptrs)) return NULL;
+			const LanguageMeta *meta = ptr + sizeof(RiffChunkHeader);
+			if (meta->version != TRANSLATION_VER || meta->count > countof(translation_ptrs)) return NULL;
 
 			// all good
-			if (version) *version = meta.version;
-			if (count) *count = meta.count;
-			if (language_name) strcpy(language_name, meta.languageName);
+			if (version) *version = meta->version;
+			if (count) *count = meta->count;
+			if (language_name) strcpy(language_name, meta->languageName);
 			return ptr;
 		}
 
