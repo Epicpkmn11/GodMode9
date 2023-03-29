@@ -20,12 +20,17 @@ static const char* translation_fallbacks[] = {
 	#undef STRING
 };
 
-static u8* translation_data = NULL;
+static char* translation_data = NULL;
 
 typedef struct {
 	char name[32];
 	char path[256];
 } Language;
+
+typedef struct {
+	char chunk_id[4]; // NOT null terminated
+	u32 size;
+} RiffChunkHeader;
 
 typedef struct {
 	u32 version;
@@ -36,41 +41,44 @@ STATIC_ASSERT(sizeof(LanguageMeta) == 40);
 
 bool SetLanguage(const void* translation, u32 translation_size) {
 	u32 str_count;
-	u8* ptr = NULL;
+	const void* ptr = translation;
+	const RiffChunkHeader* riff_header;
+	const RiffChunkHeader* chunk_header;
+
+	// Free old translation data
+		if (translation_data) free(translation_data);
+		translation_data = NULL;
 
 	if ((ptr = GetLanguage(translation, translation_size, NULL, &str_count, NULL))) {
-		// character data
-		if (memcmp(ptr, "SDAT", 4) == 0) {
-			u32 section_size;
-			memcpy(&section_size, ptr + 4, sizeof(u32));
+		// load total size
+		riff_header = translation;
 
-			if (translation_data) free(translation_data);
-			translation_data = malloc(section_size);
-			if (!translation_data) goto fallback;
+		while ((u32)(ptr - translation) < riff_header->size) {
+			chunk_header = ptr;
 
-			memcpy(translation_data, ptr + 8, section_size);
+			if (memcmp(chunk_header->chunk_id, "SDAT", 4) == 0) { // string data
+				translation_data = malloc(chunk_header->size);
+				if (!translation_data) goto fallback;
 
-			ptr += 8 + section_size;
-		} else goto fallback;
+				memcpy(translation_data, ptr + sizeof(RiffChunkHeader), chunk_header->size);
+			} else if (memcmp(chunk_header->chunk_id, "SMAP", 4) == 0) { // string map
+				// string data must come before the map
+				if(!translation_data) goto fallback;
 
-		// character map
-		if (memcmp(ptr, "SMAP", 4) == 0) {
-			u32 section_size;
-			memcpy(&section_size, ptr + 4, sizeof(u32));
+				u16* string_map = (u16*)(ptr + sizeof(RiffChunkHeader));
 
-			u16* string_map = (u16*)((u32)ptr + 8);
-
-			// Load all the strings
-			for (u32 i = 0; i < countof(translation_ptrs); i++) {
-				if (i < str_count) {
-					*translation_ptrs[i] = (char*)(translation_data + string_map[i]);
-				} else {
-					*translation_ptrs[i] = translation_fallbacks[i];
+				// Load all the strings
+				for (u32 i = 0; i < countof(translation_ptrs); i++) {
+					if (i < str_count) {
+						*translation_ptrs[i] = (translation_data + string_map[i]);
+					} else {
+						*translation_ptrs[i] = translation_fallbacks[i];
+					}
 				}
 			}
 
-			ptr += 8 + section_size;
-		} else goto fallback;
+			ptr += sizeof(RiffChunkHeader) + chunk_header->size;
+		}
 
 		return true;
 	}
@@ -88,37 +96,43 @@ fallback:
 	return false;
 }
 
-u8* GetLanguage(const void* riff, const u32 riff_size, u32* version, u32* count, char* language_name) {
-	u8* ptr = (u8*) riff;
-	LanguageMeta meta;
+const void* GetLanguage(const void* riff, const u32 riff_size, u32* version, u32* count, char* language_name) {
+	const void* ptr = riff;
+	const RiffChunkHeader* riff_header;
+	const RiffChunkHeader* chunk_header;
 
-	// check header magic, then skip over
-	if (!ptr || memcmp(ptr, "RIFF", 4) != 0) return NULL;
+	// check header magic and load size
+	if (!ptr) return NULL;
+	riff_header = ptr;
+	if(memcmp(riff_header->chunk_id, "RIFF", 4) != 0) return NULL;
 
 	// ensure enough space is allocated
-	u32 data_size;
-	memcpy(&data_size, ptr + 4, sizeof(u32));
-	if (data_size > riff_size) return NULL;
+	if (riff_header->size > riff_size) return NULL;
 
-	ptr += 8;
+	ptr += sizeof(RiffChunkHeader);
 
-	// check for and load META section
-	if (memcmp(ptr, "META", 4) == 0) {
-		u32 section_size;
-		memcpy(&section_size, ptr + 4, sizeof(u32));
-		if (section_size != sizeof(LanguageMeta)) return NULL;
+	while ((u32)(ptr - riff) < riff_header->size) {
+		chunk_header = ptr;
 
-		memcpy(&meta, ptr + 8, sizeof(LanguageMeta));
-		if (meta.version != TRANSLATION_VER || meta.count > countof(translation_ptrs)) return NULL;
+		// check for and load META section
+		if (memcmp(chunk_header->chunk_id, "META", 4) == 0) {
+			if (chunk_header->size != sizeof(LanguageMeta)) return NULL;
 
-		ptr += 8 + section_size;
-	} else return NULL;
+			LanguageMeta meta;
+			memcpy(&meta, ptr + 8, sizeof(LanguageMeta));
+			if (meta.version != TRANSLATION_VER || meta.count > countof(translation_ptrs)) return NULL;
 
-	// all good
-	if (version) *version = meta.version;
-	if (count) *count = meta.count;
-	if (language_name) strcpy(language_name, meta.languageName);
-	return ptr;
+			// all good
+			if (version) *version = meta.version;
+			if (count) *count = meta.count;
+			if (language_name) strcpy(language_name, meta.languageName);
+			return ptr;
+		}
+
+		ptr += sizeof(RiffChunkHeader) + chunk_header->size;
+	}
+
+	return NULL;
 }
 
 int compLanguage(const void* e1, const void* e2) {
