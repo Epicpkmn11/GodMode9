@@ -27,6 +27,13 @@ typedef struct {
 	char path[256];
 } Language;
 
+typedef struct {
+	u32 version;
+	u32 count;
+	char languageName[32];
+} LanguageMeta;
+STATIC_ASSERT(sizeof(LanguageMeta) == 40);
+
 bool SetLanguage(const void* translation, u32 translation_size) {
 	u32 str_count;
 	u8* ptr = NULL;
@@ -83,9 +90,7 @@ fallback:
 
 u8* GetLanguage(const void* riff, const u32 riff_size, u32* version, u32* count, char* language_name) {
 	u8* ptr = (u8*) riff;
-	u32 riff_version = 0;
-	u32 riff_count = 0;
-	char riff_lang_name[32] = "";
+	LanguageMeta meta;
 
 	// check header magic, then skip over
 	if (!ptr || memcmp(ptr, "RIFF", 4) != 0) return NULL;
@@ -101,20 +106,18 @@ u8* GetLanguage(const void* riff, const u32 riff_size, u32* version, u32* count,
 	if (memcmp(ptr, "META", 4) == 0) {
 		u32 section_size;
 		memcpy(&section_size, ptr + 4, sizeof(u32));
-		if (section_size != 40) return NULL;
+		if (section_size != sizeof(LanguageMeta)) return NULL;
 
-		memcpy(&riff_version, ptr + 8, sizeof(u32));
-		memcpy(&riff_count, ptr + 12, sizeof(u32));
-		memcpy(riff_lang_name, ptr + 16, 31);
-		if (riff_version != TRANSLATION_VER || riff_count > countof(translation_ptrs)) return NULL;
+		memcpy(&meta, ptr + 8, sizeof(LanguageMeta));
+		if (meta.version != TRANSLATION_VER || meta.count > countof(translation_ptrs)) return NULL;
 
 		ptr += 8 + section_size;
 	} else return NULL;
 
 	// all good
-	if (version) *version = riff_version;
-	if (count) *count = riff_count;
-	if (language_name) strcpy(language_name, riff_lang_name);
+	if (version) *version = meta.version;
+	if (count) *count = meta.count;
+	if (language_name) strcpy(language_name, meta.languageName);
 	return ptr;
 }
 
