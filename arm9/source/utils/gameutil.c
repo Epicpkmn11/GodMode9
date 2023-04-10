@@ -1317,12 +1317,18 @@ u32 CryptCiaFile(const char* orig, const char* dest, u16 crypto) {
 
     // if not inplace: take over CIA metadata
     if (!inplace && (info.size_meta == CIA_META_SIZE)) {
-        CiaMeta* meta = (CiaMeta*) (void*) (cia + 1);
-        if ((fvx_qread(orig, meta, info.offset_meta, CIA_META_SIZE, NULL) != FR_OK) ||
-            (fvx_qwrite(dest, meta, info.offset_meta, CIA_META_SIZE, NULL) != FR_OK)) {
+        CiaMeta* meta = (CiaMeta*) malloc(sizeof(CiaMeta));
+        if (!meta) {
             free(cia);
             return 1;
         }
+        if ((fvx_qread(orig, meta, info.offset_meta, CIA_META_SIZE, NULL) != FR_OK) ||
+            (fvx_qwrite(dest, meta, info.offset_meta, CIA_META_SIZE, NULL) != FR_OK)) {
+            free(cia);
+            free(meta);
+            return 1;
+        }
+        free(meta);
     }
 
     // fix TMD hashes, write CIA stub to destination
@@ -3290,12 +3296,21 @@ u64 GetGameFileTrimmedSize(const char* path) {
         trimsize = GetAnyFileTrimmedSize(path);
     } else if (filetype & GAME_NDS) {
         TwlHeader hdr;
-        if (fvx_qread(path, &hdr, 0, sizeof(TwlHeader), NULL) != FR_OK)
+        if (fvx_qread(path, &hdr, 0, sizeof(TwlHeader), NULL) != FR_OK) {
             return 0;
-        if (hdr.unit_code != 0x00) // DSi or NDS+DSi
+        } if (hdr.unit_code != 0x00) { // DSi or NDS+DSi
             trimsize = hdr.ntr_twl_rom_size;
-        else if (hdr.ntr_rom_size) // regular NDS
-            trimsize = hdr.ntr_rom_size + 0x88;
+        } else if (hdr.ntr_rom_size) { // regular NDS
+            trimsize = hdr.ntr_rom_size;
+
+            // Check if immediately after the reported cart size
+            // is the magic number string 'ac' (auth code).
+            // If found, add 0x88 bytes for the download play RSA key.
+            u16 rsaMagic;
+            if(fvx_qread(path, &rsaMagic, trimsize, 2, NULL) == FR_OK && rsaMagic == 0x6361) {
+                trimsize += 0x88;
+            }
+        }
     } else {
         u8 hdr[0x200];
         if (fvx_qread(path, &hdr, 0, 0x200, NULL) != FR_OK)
